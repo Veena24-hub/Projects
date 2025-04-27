@@ -1,0 +1,179 @@
+---
+title: '"Week 1 Assignment:  Linear Regression Models"'
+author: "Veena Chebrolu"
+date: "2024-05-23"
+output: html_document
+---
+
+###### Installed.packages("dplyr") & ("ggplot2") ######
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+## Q1:Loaded the data set California_Hospital_Data to Markdown file. 
+```{r}
+
+library(readr)
+
+# Loaded the dataset
+hospital_data <- read.csv("California_Hospital_Data.csv")
+
+# View of the dataset
+head(hospital_data)
+
+```
+
+Interpretation: The data shows performance measures for Alta Bates Summit Medical Center in Alameda County from 2016 to 2018. It includes metrics such as CABG 30-Day Readmission, Post-Operative Stroke, and CABG Operative Mortality, with corresponding cases, adverse events, and risk-adjusted rates. For instance, in 2017-2018, the CABG 30-Day Readmission rate was 9.78% for 255 cases, while the Post-Operative Stroke rate was 0.96% for 287 cases. The data helps assess the hospital's quality of care in specific procedures over time.
+
+## Q2 a.Converted the categorical variable Performance_Rating to factor in R. 
+```{r}
+
+# Convert 'Performance_Rating' to a factor
+hospital_data$Performance_Rating <- factor(hospital_data$Performance_Rating)
+
+# Optionally, check the structure of the data to confirm the change
+str(hospital_data)
+
+```
+
+Interpretation: The dataset consists of 2,967 observations and 11 variables. Among these, 'Year' denotes the timeframe, 'County' represents the geographical area, and 'Hospital' indicates the specific medical facility, all stored as character strings. This suggests the dataset likely captures hospital performance metrics over time within different counties.The dataset comprises hospital performance data with variables like 'OSHPD_ID', 'Performance_Measure', and 'Performance_Rating'. 'Cases' and 'Adverse_Events' detail occurrences, while 'Risk_adjusted_Rate' provides numerical context. 'Performance_Rating' categorizes hospitals as "Average", "Better", or "Worse" based on their performance.The variables 'Longitude' and 'Latitude' contain numerical values representing geographical coordinates, likely denoting the precise location of hospitals within a specific region. These coordinates enable spatial analysis, facilitating mapping and visualization of hospital distributions.
+
+
+## Q2 b.The levels of the Performance_Rating variable.
+```{r}
+
+# The 'Performance_Rating' has converted to a factor
+performance_levels <- levels(hospital_data$Performance_Rating)
+
+# Print of the levels of the Performance_Rating variable
+print(performance_levels)
+
+```
+
+Interpretation: The ’Performance_Rating’ variable in the ‘hospital_data’ dataset and to obtain the levels of the factor Variable name: ‘Performance_Rating’. The output “Average” “Better” “Worse” defines the subgroups within the ‘Performance_Rating’ variable. These levels suggest that the performance ratings of hospitals are classified into three categories. This means hospitals’ relative performance can be categorized as average, better than average, and worse than average, which gives an idea of the quality of a hospital’s performance.
+
+## Q3 a.Calculated the means of Risk_adjusted_Rate for each Performance_Rating Level.
+```{r}
+
+# Calculated the mean of Risk_adjusted_Rate for each Performance_Rating level
+mean_risk_adjusted_rate <- hospital_data %>%
+  group_by(Performance_Rating) %>%
+  summarise(Mean_Risk_Adjusted_Rate = mean(Risk_adjusted_Rate, na.rm = TRUE))
+
+# Print of the results
+print(mean_risk_adjusted_rate)
+
+```
+
+Interpretation: The 'Performance_Rating' variable is a factor with three levels: "Average", "Better", and "Worse". The mean risk-adjusted rates for hospitals categorized as "Average", "Better", and "Worse" are approximately 6.178, 3.768, and 16.412 respectively. This suggests that hospitals with a "Worse" performance rating have notably higher mean risk-adjusted rates compared to those rated as "Average" or "Better".
+
+
+## Q3 b.Calculated the total number of observations per Performance_Rating Level.
+```{r}
+
+# Calculated the number of observations for each Performance_Rating level
+count_performance_rating <- hospital_data %>%
+  group_by(Performance_Rating) %>%
+  summarise(Count = n())
+
+# Print of the results
+print(count_performance_rating)
+
+```
+
+Interpretation:  The 'Performance_Rating' variable has three levels: "Average", "Better", and "Worse", with corresponding counts of 2835, 38, and 94 respectively. The distribution indicates a significant majority of hospitals are rated as "Average", while "Better" and "Worse" categories are represented by much smaller counts. This suggests an imbalanced distribution of performance ratings, with the majority of hospitals falling under the "Average" category, while the "Better" and "Worse" categories are less represented.
+
+## Q3 c.Produced a boxplot of Risk_adjusted_Rate for each Performance_Rating Level.
+```{r}
+
+# Created a boxplot
+boxplot_risk_adjusted_rate <- ggplot(hospital_data, aes(x = Performance_Rating, y = Risk_adjusted_Rate)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of Risk-adjusted Rate by Performance Rating",
+       x = "Performance Rating",
+       y = "Risk-adjusted Rate") +
+  theme_minimal()
+
+# Display of the boxplot
+print(boxplot_risk_adjusted_rate)
+
+```
+
+Interpretation: The boxplot of "Risk-adjusted Rate by Performance Rating" shows three groups labeled as "Average," "Better," and "Worse." The "Average" group has a very compact interquartile range (IQR) with a low median, suggesting that most hospitals in this group have similar, lower risk-adjusted rates, though there are numerous outliers indicating some hospitals in this category exceed the typical range significantly. The "Better" group has the lowest spread and median, which is close to the lower end of the scale, indicating very low risk-adjusted rates uniformly across these hospitals—a desirable outcome suggesting effective management and care. Lastly, the "Worse" category has a wider IQR and a higher median, which indicates not only higher typical risk-adjusted rates but also more variability within this group, pointing towards inconsistent outcomes and potential areas for improvement.
+
+## Q4 Determined, via a single-predictor model, whether Cases is a significant predictor of Risk_adjusted Rate. 
+```{r}
+
+# Fit the linear regression model
+model <- lm(Risk_adjusted_Rate ~ Cases, data = hospital_data)
+
+# Get the summary of the model
+model_summary <- summary(model)
+
+# Print the summary
+print(model_summary)
+
+```
+
+Interpretation: 
+
+The overall model fit: The linear regression model shows a significant overall fit (F-statistic: 5.545, p-value: < 2.2e-16), indicating that the relationship between 'Cases' and 'Risk_adjusted_Rate' is statistically significant. The model explains approximately 50.25% of the variance in the response variable 'Risk_adjusted_Rate', suggesting that other unaccounted factors may also influence the risk-adjusted rates.
+
+The amount of variance accounted for by the predictor: The coefficient of determination (R-squared) is 0.5025, indicating that approximately 50.25% of the variance in the 'Risk_adjusted_Rate' can be explained by the predictor variable 'Cases'. This suggests a moderate level of variance accounted for by the predictor, implying that 'Cases' alone may not fully capture the complexities influencing risk-adjusted rates, leaving a considerable portion of the variance unexplained.
+
+
+## Q5 Determined whether in addition to Cases, Adverse_Events is a significant predictor.
+```{r}
+
+# Fit the extended linear regression model
+extended_model <- lm(Risk_adjusted_Rate ~ Cases + Adverse_Events, data = hospital_data)
+
+# Get the summary of the extended model
+extended_model_summary <- summary(extended_model)
+
+# Print the summary of the extended model
+print(extended_model_summary)
+
+```
+
+Interpretation: The addition of the "Adverse_Events" predictor has substantially enhanced the overall model fit, evident from the rise in adjusted R-squared from 0.7204 to 0.7635. This signifies that "Adverse_Events" contributes significantly to explaining the variability in the risk-adjusted rate beyond "Cases" alone. Statistically, the inclusion of "Adverse_Events" is highly significant, supported by an extremely low p-value (< 2.2e-16), indicating a genuine association. The p-value associated with the overall model (F-statistic) is extremely small, indicating strong evidence against the null hypothesis that all regression coefficients are zero. Therefore, we reject the null hypothesis and conclude that the overall model is statistically significant. This suggests that at least one of the predictors included in the model (Cases and Adverse_Events) has a significant effect on the risk-adjusted rate.. Practically, this underscores the importance of considering adverse events alongside cases for a comprehensive understanding of factors affecting the risk-adjusted rate, suggesting potential quality improvements in hospitals by addressing adverse events systematically.
+
+## Q6 To the previous model, added the Performance_Rating as a predictor.
+```{r}
+
+# Ensure Performance_Rating is a factor
+hospital_data$Performance_Rating <- as.factor(hospital_data$Performance_Rating)
+
+# Fit the regression model with Performance_Rating as an additional predictor
+full_model <- lm(Risk_adjusted_Rate ~ Cases + Adverse_Events + Performance_Rating, data = hospital_data)
+
+# Get the summary of the model
+full_model_summary <- summary(full_model)
+
+# Print the summary
+print(full_model_summary)
+
+```
+
+Interpretation: The coefficients represent the estimated effect of each level of "Cases" compared to a baseline level, with negative values indicating a decrease in the risk-adjusted rate compared to the baseline. For "Performance_Rating," the level that significantly differs from the baseline can be identified by examining which coefficients have a p-value < 0.05. Adding "Performance_Rating" as a predictor has likely resulted in a change in the overall model fit. The statistical significance can be assessed by examining the p-value associated with the F-statistic, while the practical significance can be evaluated based on the adjusted R-squared value, which indicates the proportion of variability explained by the predictors. The null hypothesis is likely rejected, indicating that there is a significant relationship between the predictors (including "Performance_Rating") and the risk-adjusted rate. This suggests that the inclusion of "Performance_Rating" improves the model's ability to predict the risk-adjusted rate, providing valuable insights for hospital management and quality improvement efforts.
+
+## Q7 Conclusion. 
+```{r}
+anova_result <- anova(model, extended_model, full_model)
+print(anova_result)
+```
+
+Interpretention: The Analysis of Variance (ANOVA) table compares three models predicting the risk-adjusted rate. Model 1 includes only "Cases," while Model 2 adds "Adverse_Events," and Model 3 further adds "Performance_Rating." The Residual Degrees of Freedom (Res.Df) decrease as predictors are added, indicating a better fit. The decrease in Residual Sum of Squares (RSS) from Model 1 to Model 2 and then to Model 3 suggests that each additional predictor significantly improves the model fit. The F-statistic for Model 2 and Model 3 is highly significant (p < 0.001), indicating that both "Adverse_Events" and "Performance_Rating" contribute significantly to explaining the variability in the risk-adjusted rate beyond "Cases" alone.
+
+
+## Based on the  analyses and interpretations, the best model among those fitted would likely be the full model(Model 3), which includes predictors for Cases, Adverse_Events, and Performance_Rating.
+
+1. Statistical Significance: The ANOVA results indicate that each additional predictor significantly improves the model fit, as evidenced by the highly significant F-statistics for Model 2 (Cases + Adverse_Events) and Model 3 (Cases + Adverse_Events + Performance_Rating). This suggests that both Adverse_Events and Performance_Rating contribute significantly to explaining the variability in the risk-adjusted rate beyond just Cases.
+
+2.Practical Significance: The adjusted R-squared value of the full model (Model 3) is likely to be higher than that of the previous models, indicating that a larger proportion of the variability in the risk-adjusted rate is explained by the predictors in this model. This means that the inclusion of Adverse_Events and Performance_Rating provides a more comprehensive understanding of the factors influencing the risk-adjusted rate.
+   
+3. Predictor Significance: Both Adverse_Events and Performance_Rating emerge as significant predictors in the full model. Adverse_Events likely represent complications or negative outcomes following procedures, while Performance_Rating reflects the overall quality of care provided by hospitals. The significance of these predictors implies that they play important roles in determining the risk-adjusted rate. Addressing adverse events and improving hospital performance ratings could potentially lead to better risk-adjusted rates.
+
+In conclusion, the full model (Model 3) with predictors for Cases, Adverse_Events, and Performance_Rating appears to be the best model in terms of both statistical significance and practical relevance. It provides valuable insights into the factors affecting risk-adjusted rates and suggests areas for quality improvement in hospital care.
